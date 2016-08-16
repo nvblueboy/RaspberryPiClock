@@ -2,7 +2,6 @@
 
 from clock import *
 
-
 if __name__ == "__main__":
     mainClock = Clock()
     mainClock.win.run()

@@ -27,12 +27,13 @@ class Clock():
         self.updateWeather()
 
         self.mode = 0
-        ##self.mainFrame.tkraise()
+        self.mainFrame.tkraise()
         
         ##Register the screen's update system.
         self.win.root.after(100,self.updateSelf)
 
     def switchMode(self, *args):
+        ##Todo: Make switching work.
         self.mode += 1
         if self.mode == len(self.modes):
             self.mode = 0
@@ -46,47 +47,41 @@ class Clock():
         
     def createMainFrame(self):
         self.mainFrame = Frame(self.win.root, bg = "black")
-        self.mainFrame.pack()
+        self.mainFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
         ##Set the variable to hold the time string and the label to show it.
         self.timeStr = StringVar()
         self.timeLabel = Label(self.mainFrame, textvariable=self.timeStr,
                                font=("Helvetica", 60, "bold"), fg = "white", bg = "black")
-        self.timeLabel.pack(pady=(50,10))
+        self.timeLabel.place(relx=.5, rely=.25, anchor=CENTER)
 
         ##Set the variable to hold the date string and the label to show it.
         self.dateStr = StringVar()
         self.dateLabel = Label(self.mainFrame, textvariable=self.dateStr,
                                 font=("Helvetica", 30), fg = "white", bg = "black")
-        self.dateLabel.pack()
+        self.dateLabel.place(relx=.5, rely=.4, anchor=CENTER)
 
         self.tempStr = StringVar()
         self.tempLabel = Label(self.mainFrame, textvariable=self.tempStr,
                                font=("Helvetica", 30), fg = "white", bg = "black")
-        self.tempLabel.pack(pady=(50,10))
+        self.tempLabel.place(relx=.5, rely=.6, anchor=CENTER)
 
         self.forecastStr = StringVar()
         self.forecastLabel = Label(self.mainFrame, textvariable=self.forecastStr,
                                font=("Helvetica", 30), fg = "white", bg = "black")
-        self.forecastLabel.pack()
+        self.forecastLabel.place(relx=.5, rely=.7, anchor=CENTER)
 
         
     def createForecastFrame(self):
-        self.forecastFrame = Frame(self.win.root, bg = "black")
+        self.forecastFrame = Frame(self.win.root, bg = "black", width=800, height = 480)
+        self.forecastFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
         
         forecastData = weather.get_daily_forecasts(weather.get_weather(self.config.location))
         
-        self.todayVar = StringVar()
-        self.tomorrowVar = StringVar()
-        self.twoDaysVar = StringVar()
-        self.todayLabel = Label(self.forecastFrame, textvariable=self.todayVar,
+        self.forecastsVar = StringVar()
+        self.forecastsLabel = Label(self.forecastFrame, textvariable=self.forecastsVar,
                                font=("Helvetica", 30), fg = "white", bg = "black")
-        self.tomorrowLabel = Label(self.forecastFrame, textvariable=self.tomorrowVar,
-                               font=("Helvetica", 30), fg = "white", bg = "black")
-        self.twoDaysLabel = Label(self.forecastFrame, textvariable=self.twoDaysVar,
-                               font=("Helvetica", 30), fg = "white", bg = "black")
-        self.todayLabel.pack()
-        self.tomorrowLabel.pack()
-        self.twoDaysLabel.pack()
+        self.forecastsLabel.place(relx = .5, rely=.5, anchor=CENTER)
+
         
     def updateSelf(self):
         
@@ -108,9 +103,13 @@ class Clock():
             self.tempStr.set(weather.get_current_temperature(weather_data) + " F")
             self.forecastStr.set(weather.get_daily_forecasts(weather_data)[0])
 
+            totalString = ""
             ##Update the forecasts.
-            self.todayVar.set("It works")
-
+            for i in range(1,len(weather.get_daily_forecasts(weather_data))):
+                day = weather.get_daily_forecasts(weather_data)[i]
+                dayInt = (time.localtime()[6] + i) % 7
+                totalString += intToDay(dayInt) + ": "+day + "\n"
+            self.forecastsVar.set(totalString)
         
     def timeString(self):
         t = time.localtime()
@@ -119,3 +118,17 @@ class Clock():
     def dateString(self):
         t = time.localtime()
         return time.strftime("%A, %B %d, %Y",t)
+
+
+
+
+def intToDay(num):
+    if num==0: return "Monday"
+    elif num==1: return "Tuesday"
+    elif num==2: return "Wednesday"
+    elif num==3: return "Thursday"
+    elif num==4: return "Friday"
+    elif num==5: return "Saturday"
+    elif num==6: return "Sunday"
+    else: return "Invalid Day"
+        

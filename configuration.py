@@ -12,6 +12,8 @@ class Config():
             self.ical = config.get("calendar","ical")
             self.numEvents = int(config.get("calendar","number"))
             self.timezone = config.get("calendar", "timezone")
+            self.nytapi = config.get("news","key")
+            self.nyttags = config.get("news","sections").split(" ")
             
 
 def keyvals(dictionary):
@@ -28,4 +30,4 @@ def keyvals(dictionary):
 
 if __name__ == "__main__":
     config = Config()
-    print (config.location)
+    

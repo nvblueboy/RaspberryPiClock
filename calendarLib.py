@@ -9,6 +9,7 @@ import requests, icalendar, pytz
 from datetime import datetime, date
 
 def getCalendar():
+    print("Getting calendar data...")
     outList = []
     ##Load the config file.
     config = configuration.Config()

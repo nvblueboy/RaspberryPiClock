@@ -15,4 +15,5 @@ class Window():
             self.h = h
             self.root.geometry(str(w)+"x"+str(h))            
     def run(self):
+        print("Beginning mainloop!")
         self.root.mainloop()

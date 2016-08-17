@@ -12,6 +12,7 @@ def get_weather(location):
     return json_file
 
 def get_daily_forecasts(json_file):
+    print("Getting daily forecasts...")
     outputList = {}
     forecastData = json_file["query"]["results"]["channel"]["item"]["forecast"]
     for i in range(len(forecastData)):
@@ -20,6 +21,7 @@ def get_daily_forecasts(json_file):
     return outputList
 
 def get_current_temperature(json_file):
+    print("Getting current temperature...")
     return json_file["query"]["results"]["channel"]["item"]["condition"]["temp"]
 
         

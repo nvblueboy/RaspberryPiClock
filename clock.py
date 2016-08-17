@@ -6,10 +6,11 @@ from window import *
 import weather
 import calendarLib
 import configuration
+import news
 
 class Clock():
 
-    modes = ["clock","forecast","calendar"]
+    modes = ["clock","forecast","calendar","news"]
     
     def __init__(self):
         ##Pull in the configuration file.
@@ -23,36 +24,49 @@ class Clock():
         ##Set the touch screen/left click to switch modes.
         self.win.root.bind("<Button-1>",self.switchMode)
 
+        print ("Creating slides....")
         ##Create the frames and their respective widgets.
         self.createMainFrame()
         self.createForecastFrame()
         self.createCalendarFrame()
+        self.createNewsFrame()
 
+        print ("Filling frames...")
         ##Update all information and strings.
         self.updateCalendar()
         self.updateWeather()
+        self.updateNews()
 
         self.mode = 0
         self.mainFrame.tkraise()
         
         ##Register the screen's update system.
         self.win.root.after(100,self.updateSelf)
+        print("Ready to go!")
+        return
 
     def switchMode(self, *args):
+        
         ##Todo: Make switching work.
         self.mode += 1
         if self.mode == len(self.modes):
             self.mode = 0
         current_mode = self.modes[self.mode]
         if current_mode == "clock":
+            print("Clock")
             self.mainFrame.tkraise()
         if current_mode == "forecast":
+            print("Forecast")
             self.forecastFrame.tkraise()
         if current_mode == "calendar":
+            print("Calendar")
             self.calendarFrame.tkraise()
+        if current_mode == "news":
+            print("News")
+            self.newsFrame.tkraise()
         
     def createMainFrame(self):
-        self.mainFrame = Frame(self.win.root, bg = "black", cursor="none")
+        self.mainFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
         self.mainFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
         ##Set the variable to hold the time string and the label to show it.
         self.timeStr = StringVar()
@@ -95,12 +109,21 @@ class Clock():
 
         self.eventsVar = StringVar()
         self.eventsLabel = Label(self.calendarFrame, textvariable = self.eventsVar,
-                                 font=("Helvetica", 25), fg = "white", bg = "black")
+                                 font=("Helvetica", 30), fg = "white", bg = "black")
         self.eventsLabel.place(relx = .5, rely=.5, anchor=CENTER)
         
-        
+
+    def createNewsFrame(self):
+        self.newsFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
+        self.newsFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
+
+        self.newsVar = StringVar()
+        self.newsLabel = Label(self.newsFrame, textvariable = self.newsVar, wraplength=800,
+                                 font=("Helvetica", 25), fg = "white", bg = "black")
+        self.newsLabel.place(relx = .5, rely=.5, anchor=CENTER)
+    
     def updateSelf(self):
-        
+
         ##Update the text on the screen and register the next update.
         self.timeStr.set(self.timeString())
         self.dateStr.set(self.dateString())
@@ -119,6 +142,14 @@ class Clock():
         for string in calendarStrings:
             outputString += string + "\n"
         self.eventsVar.set(outputString)
+
+    def updateNews(self):
+        ## Get the news.
+        newsStrings = news.getNews()
+        totalStr = ""
+        for string in newsStrings:
+            totalStr += string+"\n"
+        self.newsVar.set(totalStr)
 
         
     def updateWeather(self):

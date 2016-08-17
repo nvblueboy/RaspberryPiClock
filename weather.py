@@ -21,3 +21,8 @@ def get_daily_forecasts(json_file):
 
 def get_current_temperature(json_file):
     return json_file["query"]["results"]["channel"]["item"]["condition"]["temp"]
+
+        
+
+if __name__ == "__main__":
+    json_data = get_weather("reno,nv")

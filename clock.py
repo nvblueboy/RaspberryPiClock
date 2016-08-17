@@ -39,47 +39,45 @@ class Clock():
             self.mode = 0
         current_mode = self.modes[self.mode]
         if current_mode == "clock":
-            print("Going to clock")
             self.mainFrame.tkraise()
         if current_mode == "forecast":
-            print("Going to forecast")
             self.forecastFrame.tkraise()
         
     def createMainFrame(self):
-        self.mainFrame = Frame(self.win.root, bg = "black")
+        self.mainFrame = Frame(self.win.root, bg = "black", cursor="none")
         self.mainFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
         ##Set the variable to hold the time string and the label to show it.
         self.timeStr = StringVar()
         self.timeLabel = Label(self.mainFrame, textvariable=self.timeStr,
-                               font=("Helvetica", 60, "bold"), fg = "white", bg = "black")
+                               font=("Helvetica", 100, "bold"), fg = "white", bg = "black")
         self.timeLabel.place(relx=.5, rely=.25, anchor=CENTER)
 
         ##Set the variable to hold the date string and the label to show it.
         self.dateStr = StringVar()
         self.dateLabel = Label(self.mainFrame, textvariable=self.dateStr,
-                                font=("Helvetica", 30), fg = "white", bg = "black")
-        self.dateLabel.place(relx=.5, rely=.4, anchor=CENTER)
+                                font=("Helvetica", 45), fg = "white", bg = "black")
+        self.dateLabel.place(relx=.5, rely=.45, anchor=CENTER)
 
         self.tempStr = StringVar()
         self.tempLabel = Label(self.mainFrame, textvariable=self.tempStr,
-                               font=("Helvetica", 30), fg = "white", bg = "black")
-        self.tempLabel.place(relx=.5, rely=.6, anchor=CENTER)
+                               font=("Helvetica", 45, "bold"), fg = "white", bg = "black")
+        self.tempLabel.place(relx=.5, rely=.65, anchor=CENTER)
 
         self.forecastStr = StringVar()
         self.forecastLabel = Label(self.mainFrame, textvariable=self.forecastStr,
                                font=("Helvetica", 30), fg = "white", bg = "black")
-        self.forecastLabel.place(relx=.5, rely=.7, anchor=CENTER)
+        self.forecastLabel.place(relx=.5, rely=.75, anchor=CENTER)
 
         
     def createForecastFrame(self):
-        self.forecastFrame = Frame(self.win.root, bg = "black", width=800, height = 480)
+        self.forecastFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
         self.forecastFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
         
         forecastData = weather.get_daily_forecasts(weather.get_weather(self.config.location))
         
         self.forecastsVar = StringVar()
         self.forecastsLabel = Label(self.forecastFrame, textvariable=self.forecastsVar,
-                               font=("Helvetica", 30), fg = "white", bg = "black")
+                               font=("Helvetica", 25), fg = "white", bg = "black")
         self.forecastsLabel.place(relx = .5, rely=.5, anchor=CENTER)
 
         
@@ -100,7 +98,7 @@ class Clock():
             weather_data = weather.get_weather(self.config.location)
 
             ##Update the weather strings.
-            self.tempStr.set(weather.get_current_temperature(weather_data) + " F")
+            self.tempStr.set(weather.get_current_temperature(weather_data) + "° F")
             self.forecastStr.set(weather.get_daily_forecasts(weather_data)[0])
 
             totalString = ""
@@ -113,7 +111,10 @@ class Clock():
         
     def timeString(self):
         t = time.localtime()
-        return time.strftime("%I:%M %p",t)
+        hour = int(t[3]) % 12
+        if hour == 0:
+            hour = 12
+        return str(hour)+time.strftime(":%M %p",t)
 
     def dateString(self):
         t = time.localtime()

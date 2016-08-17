@@ -11,12 +11,12 @@ import news
 class Clock():
 
     modes = ["clock","forecast","calendar","news"]
-    
+
     def __init__(self):
         ##Pull in the configuration file.
         self.config = configuration.Config()
-        
-        
+
+
         ##Initialize the window, setting the resolution to 800x600, and create the labels.
         self.win = Window()
         self.win.root.geometry("800x480")
@@ -39,14 +39,14 @@ class Clock():
 
         self.mode = 0
         self.mainFrame.tkraise()
-        
+
         ##Register the screen's update system.
         self.win.root.after(100,self.updateSelf)
         print("Ready to go!")
         return
 
     def switchMode(self, *args):
-        
+
         ##Todo: Make switching work.
         self.mode += 1
         if self.mode == len(self.modes):
@@ -64,7 +64,7 @@ class Clock():
         if current_mode == "news":
             print("News")
             self.newsFrame.tkraise()
-        
+
     def createMainFrame(self):
         self.mainFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
         self.mainFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
@@ -90,13 +90,13 @@ class Clock():
                                font=("Helvetica", 30), fg = "white", bg = "black")
         self.forecastLabel.place(relx=.5, rely=.75, anchor=CENTER)
 
-        
+
     def createForecastFrame(self):
         self.forecastFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
         self.forecastFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
-        
+
         forecastData = weather.get_daily_forecasts(weather.get_weather(self.config.location))
-        
+
         self.forecastsVar = StringVar()
         self.forecastsLabel = Label(self.forecastFrame, textvariable=self.forecastsVar,
                                font=("Helvetica", 25), fg = "white", bg = "black")
@@ -111,7 +111,7 @@ class Clock():
         self.eventsLabel = Label(self.calendarFrame, textvariable = self.eventsVar,
                                  font=("Helvetica", 30), fg = "white", bg = "black")
         self.eventsLabel.place(relx = .5, rely=.5, anchor=CENTER)
-        
+
 
     def createNewsFrame(self):
         self.newsFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
@@ -121,7 +121,7 @@ class Clock():
         self.newsLabel = Label(self.newsFrame, textvariable = self.newsVar, wraplength=800,
                                  font=("Helvetica", 25), fg = "white", bg = "black")
         self.newsLabel.place(relx = .5, rely=.5, anchor=CENTER)
-    
+
     def updateSelf(self):
 
         ##Update the text on the screen and register the next update.
@@ -132,7 +132,8 @@ class Clock():
             ##Do this every minute so as to not slow down the application.
             self.updateWeather()
             self.updateCalendar()
-        
+            self.updateNews()
+
         self.win.root.after(100, self.updateSelf)
 
     def updateCalendar(self):
@@ -151,7 +152,7 @@ class Clock():
             totalStr += string+"\n"
         self.newsVar.set(totalStr)
 
-        
+
     def updateWeather(self):
         ##Use the user-defined location to get weather data.
             weather_data = weather.get_weather(self.config.location)
@@ -167,7 +168,7 @@ class Clock():
                 dayInt = (time.localtime()[6] + i) % 7
                 totalString += intToDay(dayInt) + ": "+day + "\n"
             self.forecastsVar.set(totalString)
-        
+
     def timeString(self):
         t = time.localtime()
         hour = int(t[3]) % 12
@@ -191,4 +192,3 @@ def intToDay(num):
     elif num==5: return "Saturday"
     elif num==6: return "Sunday"
     else: return "Invalid Day"
-        

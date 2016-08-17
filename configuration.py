@@ -9,6 +9,9 @@ class Config():
             config = configparser.ConfigParser()
             config.read(filename)
             self.location = config.get("weather","location")
+            self.ical = config.get("calendar","ical")
+            self.numEvents = int(config.get("calendar","number"))
+            self.timezone = config.get("calendar", "timezone")
             
 
 def keyvals(dictionary):

@@ -4,11 +4,12 @@ import time
 
 from window import *
 import weather
+import calendarLib
 import configuration
 
 class Clock():
 
-    modes = ["clock","forecast"]
+    modes = ["clock","forecast","calendar"]
     
     def __init__(self):
         ##Pull in the configuration file.
@@ -19,11 +20,16 @@ class Clock():
         self.win = Window()
         self.win.root.geometry("800x480")
 
+        ##Set the touch screen/left click to switch modes.
         self.win.root.bind("<Button-1>",self.switchMode)
 
+        ##Create the frames and their respective widgets.
         self.createMainFrame()
         self.createForecastFrame()
+        self.createCalendarFrame()
 
+        ##Update all information and strings.
+        self.updateCalendar()
         self.updateWeather()
 
         self.mode = 0
@@ -42,6 +48,8 @@ class Clock():
             self.mainFrame.tkraise()
         if current_mode == "forecast":
             self.forecastFrame.tkraise()
+        if current_mode == "calendar":
+            self.calendarFrame.tkraise()
         
     def createMainFrame(self):
         self.mainFrame = Frame(self.win.root, bg = "black", cursor="none")
@@ -80,6 +88,16 @@ class Clock():
                                font=("Helvetica", 25), fg = "white", bg = "black")
         self.forecastsLabel.place(relx = .5, rely=.5, anchor=CENTER)
 
+    def createCalendarFrame(self):
+        self.calendarFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
+        self.calendarFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
+
+
+        self.eventsVar = StringVar()
+        self.eventsLabel = Label(self.calendarFrame, textvariable = self.eventsVar,
+                                 font=("Helvetica", 25), fg = "white", bg = "black")
+        self.eventsLabel.place(relx = .5, rely=.5, anchor=CENTER)
+        
         
     def updateSelf(self):
         
@@ -88,11 +106,21 @@ class Clock():
         self.dateStr.set(self.dateString())
 
         if (int(time.time()) % 60 == 0):
+            ##Do this every minute so as to not slow down the application.
             self.updateWeather()
+            self.updateCalendar()
         
         self.win.root.after(100, self.updateSelf)
 
+    def updateCalendar(self):
+        ##Separate every calendar string by a new line and set the variable.
+        calendarStrings = calendarLib.getCalendar()
+        outputString = ""
+        for string in calendarStrings:
+            outputString += string + "\n"
+        self.eventsVar.set(outputString)
 
+        
     def updateWeather(self):
         ##Use the user-defined location to get weather data.
             weather_data = weather.get_weather(self.config.location)

@@ -1,6 +1,6 @@
 ##Get the top headlines in specified sections from the New York Times.
 
-import configuration
+import configuration, logger
 
 import requests, json
 
@@ -16,17 +16,25 @@ def getTopHeadline(category, config):
     try:
         json_data = json.loads(json_raw)
     except:
-        print("Something went wrong. \n\n\n"+json_raw)
+        logger.log("Something went wrong. \n\n\n"+json_raw)
+        return False
     ##Return the top headline.
-    return json_data["results"][0]["title"]
-    
+    try:
+        return json_data["results"][0]["title"]
+    except:
+        logger.log("Something went wrong. \n\n\n"+json_data)
+        return False
 
     
 def getNews():
     headlines = []
     config = configuration.Config()
     for category in config.nyttags:
-        headlines.append(capitalize(category)+":  "+getTopHeadline(category,config))
+        headline = getTopHeadline(category,config)
+        if headline != False:
+            headlines.append(capitalize(category)+":  "+headline)
+        else:
+            headlines.append(capitalize(category)+": Unable to get headline.")
     return headlines
     
 def capitalize(string):

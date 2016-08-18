@@ -10,6 +10,10 @@ __pycache__/
 #Ignore the config file.
 config.ini
 
+#Ignore the logger.
+out.log
+
+
 # Distribution / packaging
 .Python
 env/

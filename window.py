@@ -2,6 +2,8 @@
 
 from tkinter import *
 
+import logger
+
 class Window():
     def __init__(self,fullscreen=False):
         self.root = Tk()
@@ -15,5 +17,5 @@ class Window():
             self.h = h
             self.root.geometry(str(w)+"x"+str(h))            
     def run(self):
-        print("Beginning mainloop!")
+        logger.log("Beginning mainloop!")
         self.root.mainloop()

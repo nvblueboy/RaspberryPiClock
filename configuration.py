@@ -29,5 +29,11 @@ def keyvals(dictionary):
 
 
 if __name__ == "__main__":
-    config = Config()
+    ##Being this module gets used a lot, make sure it runs quickly.
+    import time
+    start = time.time()
+    for i in range(100):
+        config = Config()
+    end = time.time()
+    print(end-start)
     

@@ -7,6 +7,8 @@ import weather
 import calendarLib
 import configuration
 import news
+import logger
+
 
 class Clock():
 
@@ -24,14 +26,14 @@ class Clock():
         ##Set the touch screen/left click to switch modes.
         self.win.root.bind("<Button-1>",self.switchMode)
 
-        print ("Creating slides....")
+        logger.log("Creating slides....")
         ##Create the frames and their respective widgets.
         self.createMainFrame()
         self.createForecastFrame()
         self.createCalendarFrame()
         self.createNewsFrame()
 
-        print ("Filling frames...")
+        logger.log("Filling frames...")
         ##Update all information and strings.
         self.updateCalendar()
         self.updateWeather()
@@ -42,7 +44,7 @@ class Clock():
 
         ##Register the screen's update system.
         self.win.root.after(100,self.updateSelf)
-        print("Ready to go!")
+        logger.log("Ready to go!")
         return
 
     def switchMode(self, *args):
@@ -53,16 +55,16 @@ class Clock():
             self.mode = 0
         current_mode = self.modes[self.mode]
         if current_mode == "clock":
-            print("Clock")
+            logger.log("Switching to Clock")
             self.mainFrame.tkraise()
         if current_mode == "forecast":
-            print("Forecast")
+            logger.log("Switching to Forecast")
             self.forecastFrame.tkraise()
         if current_mode == "calendar":
-            print("Calendar")
+            logger.log("Switching to Calendar")
             self.calendarFrame.tkraise()
         if current_mode == "news":
-            print("News")
+            logger.log("Switching to News")
             self.newsFrame.tkraise()
 
     def createMainFrame(self):

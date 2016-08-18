@@ -6,10 +6,12 @@ from pytz import timezone
 
 import requests, icalendar, pytz
 
+import logger
+
 from datetime import datetime, date
 
 def getCalendar():
-    print("Getting calendar data...")
+    logger.log("Getting calendar data...")
     outList = []
     ##Load the config file.
     config = configuration.Config()

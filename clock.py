@@ -134,8 +134,11 @@ class Clock():
             ##Do this every minute so as to not slow down the application.
             self.updateWeather()
             self.updateCalendar()
+        if (int(time.time()) % 600 == 0):
+            ##As it turns out, the Times only allows 1000 calls a day. Don't call every minute.
             self.updateNews()
-
+            
+        
         self.win.root.after(100, self.updateSelf)
 
     def updateCalendar(self):

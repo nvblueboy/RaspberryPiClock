@@ -6,7 +6,7 @@ import requests, json
 
 
 def getTopHeadline(category, config):
-    print("Getting news for "+category)
+    logger.log("Getting news for "+category)
     #Get the API Key from the config file and create the URL with the category and key.
     apikey = config.nytapi
     url = "https://api.nytimes.com/svc/topstories/v2/"+category+".json?api-key="+apikey

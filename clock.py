@@ -33,6 +33,11 @@ class Clock():
         self.createCalendarFrame()
         self.createNewsFrame()
 
+
+        ##Mark the colors.
+        self.updateColors()
+        
+
         logger.log("Filling frames...")
         ##Update all information and strings.
         self.updateCalendar()
@@ -41,6 +46,9 @@ class Clock():
 
         self.mode = 0
         self.mainFrame.tkraise()
+
+        ##Initialize the switchTime variable so it times out to the clock.
+        self.switchTime = time.time()
 
         ##Register the screen's update system.
         self.win.root.after(100,self.updateSelf)
@@ -55,42 +63,46 @@ class Clock():
             self.mode = 0
         current_mode = self.modes[self.mode]
         if current_mode == "clock":
-            logger.log("Switching to Clock")
             self.mainFrame.tkraise()
         if current_mode == "forecast":
-            logger.log("Switching to Forecast")
             self.forecastFrame.tkraise()
+            self.switchTime = time.time()
         if current_mode == "calendar":
-            logger.log("Switching to Calendar")
             self.calendarFrame.tkraise()
+            self.switchTime = time.time()
         if current_mode == "news":
-            logger.log("Switching to News")
             self.newsFrame.tkraise()
+            self.switchTime = time.time()
 
+    def switchbackCheck(self):
+        if time.time() - self.switchTime > self.config.timeout:
+            self.mode = 0
+            self.mainFrame.tkraise()
+            
     def createMainFrame(self):
         self.mainFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
         self.mainFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
         ##Set the variable to hold the time string and the label to show it.
         self.timeStr = StringVar()
         self.timeLabel = Label(self.mainFrame, textvariable=self.timeStr,
-                               font=("Helvetica", 100, "bold"), fg = "white", bg = "black")
+                               font=("Helvetica", 130, "bold"), fg = "white", bg = "black")
         self.timeLabel.place(relx=.5, rely=.25, anchor=CENTER)
 
         ##Set the variable to hold the date string and the label to show it.
         self.dateStr = StringVar()
         self.dateLabel = Label(self.mainFrame, textvariable=self.dateStr,
                                 font=("Helvetica", 45), fg = "white", bg = "black")
-        self.dateLabel.place(relx=.5, rely=.45, anchor=CENTER)
+        self.dateLabel.place(relx=.5, rely=.5, anchor=CENTER)
 
         self.tempStr = StringVar()
         self.tempLabel = Label(self.mainFrame, textvariable=self.tempStr,
                                font=("Helvetica", 45, "bold"), fg = "white", bg = "black")
-        self.tempLabel.place(relx=.5, rely=.65, anchor=CENTER)
+        self.tempLabel.place(relx=.5, rely=.7, anchor=CENTER)
 
         self.forecastStr = StringVar()
         self.forecastLabel = Label(self.mainFrame, textvariable=self.forecastStr,
                                font=("Helvetica", 30), fg = "white", bg = "black")
-        self.forecastLabel.place(relx=.5, rely=.75, anchor=CENTER)
+        self.forecastLabel.place(relx=.5, rely=.8, anchor=CENTER)
 
 
     def createForecastFrame(self):
@@ -129,17 +141,25 @@ class Clock():
         ##Update the text on the screen and register the next update.
         self.timeStr.set(self.timeString())
         self.dateStr.set(self.dateString())
+        self.win.root.after(100, self.updateSelf)
+        if (self.mode != 0):
+            self.switchbackCheck()
 
-        if (int(time.time()) % 60 == 0):
-            ##Do this every minute so as to not slow down the application.
-            self.updateWeather()
-            self.updateCalendar()
+        if (int(time.time()) % 180 == 0):
+            ##Do this every 3 minutes so as to not slow down the application.
+            try:
+                self.config = configuration.Config()
+                self.updateWeather()
+                self.updateCalendar()
+                self.updateColors()
+            except Exception as e:
+                print("Unexpected error: " + e)
+            ##Reload the config file, in case a value has changed.
         if (int(time.time()) % 600 == 0):
-            ##As it turns out, the Times only allows 1000 calls a day. Don't call every minute.
+            ##As it turns out, the Times only allows 1000 calls a day. Like your ex, don't call every minute.
             self.updateNews()
             
         
-        self.win.root.after(100, self.updateSelf)
 
     def updateCalendar(self):
         ##Separate every calendar string by a new line and set the variable.
@@ -158,6 +178,37 @@ class Clock():
         self.newsVar.set(totalStr)
 
 
+    def updateColors(self):
+        ##Set the color variables.
+        self.dayfg = self.config.daycolors[0]
+        self.daybg = self.config.daycolors[1]
+        self.nightfg = self.config.nightcolors[0]
+        self.nightbg = self.config.nightcolors[1]
+
+        ## Update the colors based on time of day.
+        sunrise_sunset = weather.get_sunrise_sunset(self.config.location)
+        current = time.localtime()
+
+        if current > sunrise_sunset[0] and current < sunrise_sunset[1]:
+            fg = self.dayfg
+            bg = self.daybg
+        else:
+            fg = self.nightfg
+            bg = self.nightbg
+
+        self.timeLabel.config(fg = fg, bg = bg)
+        self.dateLabel.config(fg = fg, bg = bg)
+        self.tempLabel.config(fg = fg, bg = bg)
+        self.forecastLabel.config(fg = fg, bg = bg)
+        self.forecastsLabel.config(fg = fg, bg = bg)
+        self.eventsLabel.config(fg = fg, bg = bg)
+        self.newsLabel.config(fg = fg, bg = bg)
+
+        self.mainFrame.config(bg = bg)
+        self.forecastFrame.config(bg = bg)
+        self.calendarFrame.config(bg = bg)
+        self.newsFrame.config(bg = bg)
+
     def updateWeather(self):
         ##Use the user-defined location to get weather data.
             weather_data = weather.get_weather(self.config.location)
@@ -168,8 +219,9 @@ class Clock():
 
             totalString = ""
             ##Update the forecasts.
-            for i in range(1,len(weather.get_daily_forecasts(weather_data))):
-                day = weather.get_daily_forecasts(weather_data)[i]
+            weather_forecasts = weather.get_daily_forecasts(weather_data)
+            for i in range(1,len(weather_forecasts)):
+                day = weather_forecasts[i]
                 dayInt = (time.localtime()[6] + i) % 7
                 totalString += intToDay(dayInt) + ": "+day + "\n"
             self.forecastsVar.set(totalString)

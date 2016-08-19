@@ -14,6 +14,9 @@ class Config():
             self.timezone = config.get("calendar", "timezone")
             self.nytapi = config.get("news","key")
             self.nyttags = config.get("news","sections").split(" ")
+            self.daycolors = config.get("display","daycolors").split(" ")
+            self.nightcolors = config.get("display","nightcolors").split(" ")
+            self.timeout = int(config.get("display","timeout"))
             
 
 def keyvals(dictionary):

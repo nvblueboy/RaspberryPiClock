@@ -17,7 +17,11 @@ class Config():
             self.daycolors = config.get("display","daycolors").split(" ")
             self.nightcolors = config.get("display","nightcolors").split(" ")
             self.timeout = int(config.get("display","timeout"))
-            
+            self.email = config.get("email","address")
+            self.password = config.get("email","password")
+            self.imap = config.get("email","server")
+            self.cutext = config.get("countup","text")
+            self.cu2text = config.get("countup","text2")
 
 def keyvals(dictionary):
     output = []

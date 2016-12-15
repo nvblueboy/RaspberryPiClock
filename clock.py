@@ -13,7 +13,9 @@ import emailLib
 
 class Clock():
 
-    modes = ["clock","forecast","calendar","news","countup"]
+    ##Possible features: clock, forecast, calendar, news, countup
+    ##Clock should ALWAYS be enabled.
+    modes = ["clock","forecast","calendar","news"]
 
     def __init__(self):
         ##Pull in the configuration file.
@@ -24,11 +26,13 @@ class Clock():
         self.win = Window()
         self.win.root.geometry("800x480")
 
-        ##Set the touch screen/left click to switch modes.
+        ##Set the touch screen/left click to switch self.modes.
         self.win.root.bind("<Button-1>",self.switchMode)
 
         logger.log("Creating slides....")
         ##Create the frames and their respective widgets.
+
+
         self.createMainFrame()
         self.createForecastFrame()
         self.createCalendarFrame()
@@ -38,15 +42,18 @@ class Clock():
 
         ##Mark the colors.
         self.updateColors()
-        
+
 
         logger.log("Filling frames...")
         ##Update all information and strings.
-        self.updateCalendar()
+        if "calendar" in self.modes:
+            self.updateCalendar()
         self.updateWeather()
-        self.updateNews()
+        if "news" in self.modes:
+            self.updateNews()
         self.readTexts()
-        self.updateCountUp()
+        if "countup" in self.modes:
+            self.updateCountUp()
 
         self.mode = 0
         self.mainFrame.tkraise()
@@ -85,7 +92,7 @@ class Clock():
         if time.time() - self.switchTime > self.config.timeout:
             self.mode = 0
             self.mainFrame.tkraise()
-            
+
     def createMainFrame(self):
         self.mainFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
         self.mainFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
@@ -111,9 +118,16 @@ class Clock():
                                font=("Helvetica", 30), fg = "white", bg = "black")
         self.forecastLabel.place(relx=.5, rely=.8, anchor=CENTER)
 
+        self.msgVar = StringVar()
+        self.msgLabel = Label(self.mainFrame, textvariable = self.msgVar, wraplength=800,
+                                font = ("Helvetica",20), fg = "white", bg = "black")
+        self.msgLabel.place(relx = .5, rely = .95, anchor=CENTER)
 
+        self.msgtime = 0
 
     def createForecastFrame(self):
+        if "forecast" not in self.modes:
+            return
         self.forecastFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
         self.forecastFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
 
@@ -125,6 +139,8 @@ class Clock():
         self.forecastsLabel.place(relx = .5, rely=.5, anchor=CENTER)
 
     def createCalendarFrame(self):
+        if "calendar" not in self.modes:
+            return
         self.calendarFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
         self.calendarFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
 
@@ -136,6 +152,8 @@ class Clock():
 
 
     def createNewsFrame(self):
+        if "news" not in self.modes:
+            return
         self.newsFrame = Frame(self.win.root, bg = "black", width=800, height = 480, cursor="none")
         self.newsFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
 
@@ -145,6 +163,8 @@ class Clock():
         self.newsLabel.place(relx = .5, rely=.5, anchor=CENTER)
 
     def createCountUpFrame(self):
+        if "countup" not in self.modes:
+            return
         self.countUpFrame = Frame(self.win.root, bg = "black", width=800, height=480, cursor="none")
         self.countUpFrame.place(relx=.5,rely=.5, anchor=CENTER,relheight=1, relwidth=1)
 
@@ -153,12 +173,12 @@ class Clock():
 
         self.countUp2LLVar = StringVar()
         self.countUp2Var = StringVar()
-        
+
         self.countUpLabelLabel = Label(self.countUpFrame, textvariable = self.countUpLLVar, wraplength=800,
                                        font = ("Helvetica",45), fg = "white", bg = "black")
         self.countUpLabel = Label(self.countUpFrame, textvariable = self.countUpVar, wraplength=800,
                                 font = ("Helvetica", 45), fg = "white", bg = "black")
-        
+
 
         self.countUpLabelLabel.place(relx=.5,rely=.15,anchor=CENTER)
         self.countUpLabel.place(relx=.5, rely=.35, anchor=CENTER)
@@ -167,30 +187,24 @@ class Clock():
                                        font = ("Helvetica",45), fg = "white", bg = "black")
         self.countUp2Label = Label(self.countUpFrame, textvariable = self.countUp2Var, wraplength=800,
                                 font = ("Helvetica", 45), fg = "white", bg = "black")
-        
+
 
         self.countUp2LabelLabel.place(relx=.5,rely=.65,anchor=CENTER)
         self.countUp2Label.place(relx=.5, rely=.85, anchor=CENTER)
 
-        self.msgVar = StringVar()
-        self.msgLabel = Label(self.mainFrame, textvariable = self.msgVar, wraplength=800,
-                                font = ("Helvetica",20), fg = "white", bg = "black")
-        self.msgLabel.place(relx = .5, rely = .95, anchor=CENTER)
 
-        self.msgtime = 0
-    
+
 
         self.lastTime = time.time()
         self.lastTime2 = time.time()
-        self.msg = "No Message"
-
     def updateSelf(self):
 
         ##Update the text on the screen and register the next update.
         self.timeStr.set(self.timeString())
         self.dateStr.set(self.dateString())
-        self.countUpVar.set(self.lastTimeString())
-        self.countUp2Var.set(self.lastTime2String())
+        if "countup" in self.modes:
+            self.countUpVar.set(self.lastTimeString())
+            self.countUp2Var.set(self.lastTime2String())
         self.win.root.after(100, self.updateSelf)
         if (time.time() - self.msgtime > 43200):
             self.msgVar.set("")
@@ -203,16 +217,18 @@ class Clock():
             try:
                 self.config = configuration.Config()
                 self.updateWeather()
-                self.updateCalendar()
+                if "calendar" in self.modes:
+                    self.updateCalendar()
                 self.updateColors()
-                self.updateCountUp()
+                if "countup" in self.modes:
+                    self.updateCountUp()
             except Exception as e:
                 print("Unexpected error: " + e)
             ##Reload the config file, in case a value has changed.
         if (int(time.time()) % 600 == 0):
             ##As it turns out, the Times only allows 1000 calls a day. Like your ex, don't call every minute.
             self.updateNews()
-            
+
     def lastTimeString(self):
         s = int(time.time() - self.lastTime)
         days = s // 86400
@@ -244,8 +260,7 @@ class Clock():
     def updateCountUp(self):
         self.countUpLLVar.set(self.config.cutext)
         self.countUp2LLVar.set(self.config.cu2text)
-        self.msgVar.set(self.msg)
-    
+
     def updateNews(self):
         ## Get the news.
         newsStrings = news.getNews()
@@ -277,20 +292,23 @@ class Clock():
         self.dateLabel.config(fg = fg, bg = bg)
         self.tempLabel.config(fg = fg, bg = bg)
         self.forecastLabel.config(fg = fg, bg = bg)
-        self.forecastsLabel.config(fg = fg, bg = bg)
-        self.eventsLabel.config(fg = fg, bg = bg)
-        self.newsLabel.config(fg = fg, bg = bg)
-        self.countUpLabel.config(fg = fg, bg = bg)
-        self.countUpLabelLabel.config(fg = fg, bg = bg)
-        self.countUp2Label.config(fg = fg, bg = bg)
-        self.countUp2LabelLabel.config(fg = fg, bg = bg)
         self.msgLabel.config(fg = fg, bg = bg)
+        if "forecast" in self.modes:
+            self.forecastsLabel.config(fg = fg, bg = bg)
+            self.forecastFrame.config(bg = bg)
+        if "calendar" in self.modes:
+            self.eventsLabel.config(fg = fg, bg = bg)
+            self.calendarFrame.config(bg = bg)
+        if "news" in self.modes:
+            self.newsLabel.config(fg = fg, bg = bg)
+            self.newsFrame.config(bg = bg)
+        if "countup" in self.modes:
+            self.countUpLabel.config(fg = fg, bg = bg)
+            self.countUpLabelLabel.config(fg = fg, bg = bg)
+            self.countUp2Label.config(fg = fg, bg = bg)
+            self.countUp2LabelLabel.config(fg = fg, bg = bg)
+            self.countUpFrame.config(bg = bg)
 
-        self.mainFrame.config(bg = bg)
-        self.forecastFrame.config(bg = bg)
-        self.calendarFrame.config(bg = bg)
-        self.newsFrame.config(bg = bg)
-        self.countUpFrame.config(bg = bg)
 
     def updateWeather(self):
         ##Use the user-defined location to get weather data.
@@ -302,12 +320,13 @@ class Clock():
 
             totalString = ""
             ##Update the forecasts.
-            weather_forecasts = weather.get_daily_forecasts(weather_data)
-            for i in range(1,len(weather_forecasts)):
-                day = weather_forecasts[i]
-                dayInt = (time.localtime()[6] + i) % 7
-                totalString += intToDay(dayInt) + ": "+day + "\n"
-            self.forecastsVar.set(totalString)
+            if "forecast" in self.modes:
+                weather_forecasts = weather.get_daily_forecasts(weather_data)
+                for i in range(1,len(weather_forecasts)):
+                    day = weather_forecasts[i]
+                    dayInt = (time.localtime()[6] + i) % 7
+                    totalString += intToDay(dayInt) + ": "+day + "\n"
+                self.forecastsVar.set(totalString)
 
     def readTexts(self):
         mails = emailLib.getNewMail()
@@ -315,19 +334,21 @@ class Clock():
             return
         for mail in mails:
             logger.log(mail[0])
-            if mail[0].lower() == "reset count 1":
-                logger.log("Count was reset.")
-                self.lastTime = time.time()
-            if mail[1].lower() == "reset count 2":
-                logger.log("Count was reset.")
-                self.lastTime2 = time.time()
+            if "countup" in self.modes:
+                if mail[0].lower() == "reset count 1":
+                    logger.log("Count was reset.")
+                    self.lastTime = time.time()
+                if mail[1].lower() == "reset count 2":
+                    logger.log("Count was reset.")
+                    self.lastTime2 = time.time()
             if mail[0].lower() == "quit application":
                 quit()
             if mail[0].lower()[:4]=="pmsg":
                 self.msgtime = time.time()
                 self.msg = mail[0][5:]
-                self.updateCountUp()
-                
+                if "countup" in self.modes:
+                    self.msgVar.set(self.msg)
+
 
     def timeString(self):
         t = time.localtime()
